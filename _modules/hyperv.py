@@ -96,7 +96,7 @@ def netadapters(all=False, **kwargs):
         args = ' -Physical'
 
     adapters = []
-    for adapter in _psrun('(Get-NetAdapter%s)' % (args,)):
+    for adapter in _psrun('Get-NetAdapter%s' % (args,)):
         adapters.append({
             'name': adapter['Name'],
             'description': adapter['InterfaceDescription'],
