@@ -77,6 +77,34 @@ def remove_vswitch(**kwargs):
     pass
 
 
+def netadapters(all=False, **kwargs):
+    '''
+    Return a list of dictionnary of physical network adapters
+
+    all
+        show all network adapters (included virtual one created by Hyper-V)
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' hyperv.netadapters
+        salt '*' hyperv.netadapters all=True
+    '''
+    args = ''
+    if all is False:
+        args = ' -Physical'
+
+    adapters = []
+    for adapter in _psrun('(Get-NetAdapter%s)' % (args,)):
+        adapters.append({
+            'name': adapter['Name'],
+            'description': adapter['InterfaceDescription'],
+            'mac': adapter['MacAddress']
+        })
+    return adapters
+
+
 if __name__ == "__main__":
     __salt__ = ''
 
