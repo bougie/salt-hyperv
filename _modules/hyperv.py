@@ -79,7 +79,7 @@ def remove_vswitch(**kwargs):
 
 def netadapters(all=False, **kwargs):
     '''
-    Return a list of dictionnary of physical network adapters
+    Return a list of dictionary of physical network adapters
 
     all
         show all network adapters (included virtual one created by Hyper-V)
