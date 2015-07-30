@@ -105,6 +105,24 @@ def netadapters(all=False, **kwargs):
     return adapters
 
 
+def vms(**kwargs):
+    '''
+    Return a list of dictionary of virtual machines
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' hyperv.vms
+    '''
+    vms = []
+    for vm in _psrun('Get-VM'):
+        vms.append({
+            'name': vm['Name'],
+            'state': vm['State']})
+    return vms
+
+
 if __name__ == "__main__":
     __salt__ = ''
 
