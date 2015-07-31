@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import json
 import logging
 import salt.utils
-# from salt.exceptions import CommandExecutionError, SaltInvocationError
+from salt.exceptions import CommandExecutionError  # , SaltInvocationError
 
 log = logging.getLogger(__name__)
 
@@ -40,10 +40,21 @@ def _psrun(cmd, json_output=True):
     if _has_powershell():
         if json_output:
             cmd = "%s | ConvertTo-Json" % (cmd,)
-        ret = __salt__['cmd.run'](cmd, shell='powershell', python_shell=False)
-        if json_output:
-            ret = json.loads(ret)
-        return ret
+        ret = __salt__['cmd.run_all'](cmd,
+                                      shell='powershell',
+                                      python_shell=False)
+        if ret['retcode'] == 0:
+            if json_output:
+                if len(ret['stdout'].strip()) == 0:
+                    # create an empty list if nothing is returned
+                    ret['stdout'] = "[]"
+                ret['stdout'] = json.loads(ret['stdout'])
+                if not isinstance(ret['stdout'], list):
+                    # if only one object is returned, append it to a list
+                    ret['stdout'] = [ret['stdout']]
+            return ret['stdout']
+        else:
+            raise CommandExecutionError(str(ret))
 
 
 def install(with_gui=False):
