@@ -8,11 +8,16 @@ from __future__ import absolute_import
 import json
 import logging
 import salt.utils
-from salt.exceptions import CommandExecutionError  # , SaltInvocationError
+from salt.exceptions import CommandExecutionError, SaltInvocationError
 
 log = logging.getLogger(__name__)
 
 __virtualname__ = 'hyperv'
+
+_SWITCH_TYPES = {
+    0: 'external',
+    1: 'internal',
+    2: 'private'}
 
 
 def __virtual__():
@@ -80,8 +85,46 @@ def vswitchs(**kwargs):
     return switchs
 
 
-def add_vswitch(**kwargs):
-    pass
+def add_vswitch(name, switchtype, **kwargs):
+    '''
+    Create a new vswitch
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' hyperv.add_vswitch <name> private|internal
+        salt '*' hyperv.add_vswitch <name> external interface=<interface>
+    '''
+    cmd = 'New-VMSwitch'
+    if name is not None and len(name.strip()) > 0:
+        cmd = '%s -Name %s' % (cmd, name)
+
+        if switchtype is not None and len(switchtype.strip()) > 0:
+            if switchtype not in _SWITCH_TYPES.values():
+                raise SaltInvocationError(
+                    'switchtype %s not supported' % (switchtype,))
+
+            # external switch
+            if switchtype == _SWITCH_TYPES[0]:
+                if 'interface' not in kwargs:
+                    raise SaltInvocationError(
+                        'no interface name specified for external vswitch')
+                cmd = '%s -NetAdapterName %s' % (cmd, kwargs['interface'])
+            # internal or private switch
+            elif switchtype in [_SWITCH_TYPES[1], _SWITCH_TYPES[2]]:
+                cmd = '%s -SwitchType %s' % (cmd, switchtype)
+
+            try:
+                _psrun(cmd)
+            except:
+                return False
+            else:
+                return True
+        else:
+            raise SaltInvocationError('vswitch type not specified')
+    else:
+        raise SaltInvocationError('vswitch name not specified')
 
 
 def remove_vswitch(**kwargs):
