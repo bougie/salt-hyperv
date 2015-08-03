@@ -127,8 +127,28 @@ def add_vswitch(name, switchtype, **kwargs):
         raise SaltInvocationError('vswitch name not specified')
 
 
-def remove_vswitch(**kwargs):
-    pass
+def remove_vswitch(name, **kwargs):
+    '''
+    Remove a vswitch
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' hyperv.remove_vswitch <name>
+    '''
+    cmd = 'Remove-VMSwitch -Force'
+    if name is not None and len(name.strip()) > 0:
+        cmd = '%s -Name %s' % (cmd, name)
+
+        try:
+            _psrun(cmd)
+        except:
+            return False
+        else:
+            return True
+    else:
+        raise SaltInvocationError('vswitch name not specified')
 
 
 def netadapters(all=False, **kwargs):
