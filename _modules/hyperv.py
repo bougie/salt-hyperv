@@ -44,7 +44,7 @@ def _psrun(cmd, json_output=True):
 
     if _has_powershell():
         if json_output:
-            cmd = "%s | ConvertTo-Json" % (cmd,)
+            cmd = "%s | ConvertTo-Json -Depth 1 -Compress" % (cmd,)
         ret = __salt__['cmd.run_all'](cmd,
                                       shell='powershell',
                                       python_shell=False)
