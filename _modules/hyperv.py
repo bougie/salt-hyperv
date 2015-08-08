@@ -179,6 +179,20 @@ def netadapters(all=False, **kwargs):
     return adapters
 
 
+def set_netadapter(mac, name=None, **kwargs):
+    get_cmd = 'Get-NetAdapter -Physical | Where {$_.MacAddress -eq "%s"}' % (
+        mac,)
+
+    if name is not None:
+        rename_cmd = 'Rename-NetAdapter'
+        rename_cmd = "%s -NewName %s -PassThru" % (rename_cmd, name)
+
+        cmd = "%s | %s" % (get_cmd, rename_cmd)
+
+        return _psrun(cmd)
+    return False
+
+
 def vms(**kwargs):
     '''
     Return a list of dictionary of virtual machines
