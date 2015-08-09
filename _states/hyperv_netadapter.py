@@ -35,15 +35,16 @@ def __virtual__():
     return False
 
 
-def managed(tgt, tgt_type='mac', **kwargs):
+def managed(tgt, **kwargs):
     '''
     Ensure that the netadapter named by mac is configured properly.
 
     tgt
-        unique identifier of the netadapter
-
-    tgt_type : mac
-        netadapter property used with ``tgt``
+        target / filter use to identify the netadapter by an unique key.
+        target have to be formated with the following format:
+            <filter_name:<filter_value>
+        allowed format are:
+            - mac
 
     '''
     ret = {'name': tgt,
@@ -53,15 +54,23 @@ def managed(tgt, tgt_type='mac', **kwargs):
 
     netadapter = None
     try:
+        tgt_type = tgt.split(':')[0]
+        tgt = ':'.join(tgt.split(':')[1:])
+
         for card in __salt__['hyperv.netadapters']():
             if tgt_type == 'mac' and card['mac'] == tgt:
                 if netadapter is not None:
-                    raise Exception*(
-                        'duplicate netadapter found for macaddress %s' % (tgt,))
+                    raise Exception(
+                        'duplicate netadapter found for filter %s/%s' % (
+                            tgt,
+                            tgt_type,))
                 netadapter = card
+        else:
+            raise Exception('no netadapter found on host')
         if netadapter is None:
-            raise Exception('no netcard found with filter %s/%s' % (tgt,
-                                                                    tgt_type,))
+            raise Exception('no netadapter found for filter %s/%s' % (
+                tgt,
+                tgt_type,))
     except Exception, e:
         ret['comment'] = str(e)
         ret['result'] = False
