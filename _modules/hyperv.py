@@ -180,6 +180,21 @@ def netadapters(all=False, **kwargs):
 
 
 def set_netadapter(mac, name=None, **kwargs):
+    '''
+    Set configuration properties of a physical netadapter
+
+    mac
+       mac address of netadapter
+
+    name
+       display name of netadapter
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' hyperv.set_netadapter 00-00-00-00-00-00 name=VNIC0
+    '''
     get_cmd = 'Get-NetAdapter -Physical | Where {$_.MacAddress -eq "%s"}' % (
         mac,)
 
