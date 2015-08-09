@@ -189,11 +189,18 @@ def set_netadapter(tgt, tgt_type='mac', **kwargs):
     tgt_type : mac
         netadapter property used with ``tgt``
 
+    name
+        display name of netcard
+
+    vlan
+        VLAN ID
+
     CLI Example:
 
     .. code-block:: bash
 
         salt '*' hyperv.set_netadapter 00-00-00-00-00-00 name=vnic0
+        salt '*' hyperv.set_netadapter 00-00-00-00-00-00 vlan=42
         salt '*' hyperv.set_netadapter 'Ethernet 5' tgt_type=name name=vnic0
     '''
     filter_properties = {'mac': 'MacAddress',
@@ -205,14 +212,24 @@ def set_netadapter(tgt, tgt_type='mac', **kwargs):
         filter_properties[tgt_type],
         tgt)
 
+    rename_cmd = None
     if 'name' in kwargs:
         rename_cmd = 'Rename-NetAdapter'
         rename_cmd = "%s -NewName %s -PassThru" % (rename_cmd, kwargs['name'])
 
-        cmd = "%s | %s" % (get_cmd, rename_cmd)
+    set_cmd = None
+    if 'vlan' in kwargs:
+        set_cmd = 'Set-NetAdapter'
+        set_cmd = '%s -VlanID %s -PassThru' % (set_cmd, kwargs['vlan'])
 
-        return _psrun(cmd)
-    return False
+    if rename_cmd is not None and set_cmd is not None:
+        return _psrun("%s | %s | %s" % (get_cmd, rename_cmd, set_cmd))
+    if rename_cmd is not None and set_cmd is None:
+        return _psrun("%s | %s" % (get_cmd, rename_cmd))
+    elif set_cmd is not None:
+        return _psrun("%s | %s" % (get_cmd, set_cmd))
+    else:
+        return False
 
 
 def vms(**kwargs):
