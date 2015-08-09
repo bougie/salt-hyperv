@@ -35,18 +35,18 @@ def __virtual__():
     return False
 
 
-def managed(mac, name=None, **kwargs):
+def managed(tgt, tgt_type='mac', **kwargs):
     '''
     Ensure that the netadapter named by mac is configured properly.
 
-    mac
-        @MAC address of the physical netadapter
+    tgt
+        unique identifier of the netadapter
 
-    name
-        Name of the netadapter
+    tgt_type : mac
+        netadapter property used with ``tgt``
 
     '''
-    ret = {'name': mac,
+    ret = {'name': tgt,
            'changes': {},
            'comment': '',
            'result': False}
@@ -54,29 +54,36 @@ def managed(mac, name=None, **kwargs):
     netadapter = None
     try:
         for card in __salt__['hyperv.netadapters']():
-            if card['mac'] == mac:
+            if tgt_type == 'mac' and card['mac'] == tgt:
                 if netadapter is not None:
                     raise Exception*(
-                        'duplicate netadapter found for macaddress %s' % (mac,))
+                        'duplicate netadapter found for macaddress %s' % (tgt,))
                 netadapter = card
         if netadapter is None:
-            raise Exception(
-                'netadapter with %s macaddress was not found' % (mac,))
+            raise Exception('no netcard found with filter %s/%s' % (tgt,
+                                                                    tgt_type,))
     except Exception, e:
         ret['comment'] = str(e)
         ret['result'] = False
     else:
-        if name is not None:  # manage the netadapter name
-            if not name == netadapter['name']:
-                ret['changes']['name'] = {'new': name,
+        args = None
+        if 'name' in kwargs:  # manage the netadapter name
+            if not kwargs['name'] == netadapter['name']:
+                ret['changes']['name'] = {'new': kwargs['name'],
                                           'old': netadapter['name']}
-        try:
-            __salt__['hyperv.set_netadapter'](mac, name=name)
-        except Exception, e:
-            ret['comment'] = str(e)
-            ret['result'] = False
+                args = {'name': kwargs['name']}
+
+        if args is not None:
+            try:
+                __salt__['hyperv.set_netadapter'](tgt, tgt_type, **args)
+            except Exception, e:
+                ret['comment'] = str(e)
+                ret['result'] = False
+            else:
+                ret['comment'] = 'Netadapter properties are now up to date'
+                ret['result'] = True
         else:
-            ret['comment'] = 'Netadapter properties are up to date'
+            ret['comment'] = 'Netadapter properties are already up to date'
             ret['result'] = True
 
     return ret
