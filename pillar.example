@@ -1,0 +1,6 @@
+hyperv:
+    netadapters:
+        'mac:D2-97-AD-8C-50-83':
+            name: vnic0
+        'mac:82-A7-A1-90-F9-7F':
+            name: vnic1
