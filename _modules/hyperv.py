@@ -179,28 +179,35 @@ def netadapters(all=False, **kwargs):
     return adapters
 
 
-def set_netadapter(mac, name=None, **kwargs):
+def set_netadapter(tgt, tgt_type='mac', **kwargs):
     '''
     Set configuration properties of a physical netadapter
 
-    mac
-       mac address of netadapter
+    tgt
+        unique identifier of the netadapter
 
-    name
-       display name of netadapter
+    tgt_type : mac
+        netadapter property used with ``tgt``
 
     CLI Example:
 
     .. code-block:: bash
 
-        salt '*' hyperv.set_netadapter 00-00-00-00-00-00 name=VNIC0
+        salt '*' hyperv.set_netadapter 00-00-00-00-00-00 name=vnic0
+        salt '*' hyperv.set_netadapter 'Ethernet 5' tgt_type=name name=vnic0
     '''
-    get_cmd = 'Get-NetAdapter -Physical | Where {$_.MacAddress -eq "%s"}' % (
-        mac,)
+    filter_properties = {'mac': 'MacAddress',
+                         'name': 'Name'}
+    if tgt_type not in filter_properties:
+        raise SaltInvocationError('tgt_type %s is not allowed' % (tgt_type))
 
-    if name is not None:
+    get_cmd = 'Get-NetAdapter -Physical | Where {$_.%s -eq "%s"}' % (
+        filter_properties[tgt_type],
+        tgt)
+
+    if 'name' in kwargs:
         rename_cmd = 'Rename-NetAdapter'
-        rename_cmd = "%s -NewName %s -PassThru" % (rename_cmd, name)
+        rename_cmd = "%s -NewName %s -PassThru" % (rename_cmd, kwargs['name'])
 
         cmd = "%s | %s" % (get_cmd, rename_cmd)
 
