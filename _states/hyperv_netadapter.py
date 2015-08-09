@@ -65,8 +65,6 @@ def managed(tgt, **kwargs):
                             tgt,
                             tgt_type,))
                 netadapter = card
-        else:
-            raise Exception('no netadapter found on host')
         if netadapter is None:
             raise Exception('no netadapter found for filter %s/%s' % (
                 tgt,
