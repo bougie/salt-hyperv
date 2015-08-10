@@ -63,7 +63,23 @@ def _psrun(cmd, json_output=True):
 
 
 def install(with_gui=False):
-    pass
+    '''
+    Install HyperV role and powershell administration tools.
+
+    with_gui: False
+        install GUI Adminstration tools too
+
+    CLI EXample:
+
+    .. code-block:: bash
+
+        salt '*' hyperv.install
+    '''
+    features = ['Hyper-V', 'Hyper-V-Powershell']
+    if with_gui is True:
+        features.append('Hyper-V-Tools')
+
+    return _psrun('Install-WindowsFeature %s' % (','.join(features),))
 
 
 def vswitchs(**kwargs):
