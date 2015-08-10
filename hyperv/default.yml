@@ -1,2 +1,3 @@
 {% load_yaml as rawmap %}
+with_gui: False
 {% endload %}

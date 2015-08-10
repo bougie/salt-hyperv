@@ -18,5 +18,8 @@ Available modules
 ``hyperv``
 ----------
 
-``hyperv.conf``
----------------
+``hyperv.install``
+------------------
+
+``hyperv.config``
+-----------------
