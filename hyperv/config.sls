@@ -1,5 +1,5 @@
 {% from "hyperv/default.yml" import rawmap with context %}
-{% set rawmap = salt['pillar.get']('hyperv', rawmap, merge=True) %}
+{% set rawmap = salt['pillar.get']('hyperv', rawmap) %}
 
 {% if rawmap.netadapters is defined %}
     {% for tgt, props in rawmap.netadapters.items() %}
